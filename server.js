@@ -2,6 +2,10 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
+// import routes of the appointment
+import appointmentRoutes from './routes/appointmentRoutes.js';
+// import routes of the barbers
+import barberRoutes from './routes/barberRoutes.js';
 
 // Load Env variables
 dotenv.config();
@@ -15,6 +19,12 @@ const app = express();
 //middleware
 app.use(cors());
 app.use(express.json());
+
+//use appointment routes
+app.use('/api/appointments', appointmentRoutes);
+
+//use barber routes
+app.use('/api/barbers', barberRoutes);
 
 //test route
 app.get('/', (req, res) => {
