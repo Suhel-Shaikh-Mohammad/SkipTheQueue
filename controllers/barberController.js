@@ -46,3 +46,36 @@ export const getAllBarbers = async (req, res) => {
         );
     }
 };
+
+// Get Single barber
+export const getBarberById = async (req,res) => {
+    try{
+        const barber = await Barber.findById(req.params.id);
+        if (!barber) return res.status(404).json({ message: 'Barber Not found'});
+        res.status(200).json({ success: true, data: barber});
+    } catch (error){
+        res.status(500).json({ success: false, message: error.message});
+    }
+};
+
+//update barber
+export const updateBarber = async (req,res) => {
+    try{
+        const barber = await Barber.findByIdAndUpdate(req.params.id, req.body, {new: true});
+        if (!barber) return res.status(404).json({ message: 'Barber not found'});
+        res.status(200).json({ success: true, message: 'Barber updated successfully'});
+    } catch (error){
+        res.status(500).json({ success: false, message: error.message});
+    }
+};
+
+//Delete Barber
+export const deleteBarber = async (req,res) => {
+    try{
+        const barber = await Barber.findByIdAndDelete(req.params.id);
+        if (!barber) return res.status(404).json({ message: 'Barber not found'});
+        res.status(200).json({ success: true, message: 'Barber Deleted'});
+    } catch (error){
+        res.status(500).json({ success: false, message: error.message});
+    }
+}
