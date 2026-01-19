@@ -2,6 +2,8 @@ import express from 'express';
 import { createBarber, getAllBarbers, getBarberById, updateBarber, deleteBarber } from '../controllers/barberController.js';
 // import validation script
 import { requireFields } from '../middleware/validateRequest.js';
+// import authentication middleware
+import { protectRoute } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -11,11 +13,10 @@ const router = express.Router();
 // GET /api/barbers - get all barbers
 router.get('/:id', getBarberById); //order of get requests matters
 router.get('/', getAllBarbers);
-router.put('/:id', updateBarber);
-router.delete('/:id', deleteBarber);
 
-
-// POST requirefields
-router.post('/', requireFields(['name','email','phone']), createBarber);
+// Protected routes - require authentication
+router.post('/', protectRoute, requireFields(['name','email','phone']), createBarber);
+router.put('/:id', protectRoute, updateBarber);
+router.delete('/:id', protectRoute, deleteBarber);
 
 export default router;
