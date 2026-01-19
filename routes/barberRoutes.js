@@ -3,7 +3,7 @@ import { createBarber, getAllBarbers, getBarberById, updateBarber, deleteBarber 
 // import validation script
 import { requireFields } from '../middleware/validateRequest.js';
 // import authentication middleware
-import { protectRoute } from '../middleware/authMiddleware.js';
+import { protectRoute, authorizeRole } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -15,8 +15,8 @@ router.get('/:id', getBarberById); //order of get requests matters
 router.get('/', getAllBarbers);
 
 // Protected routes - require authentication
-router.post('/', protectRoute, requireFields(['name','email','phone']), createBarber);
-router.put('/:id', protectRoute, updateBarber);
-router.delete('/:id', protectRoute, deleteBarber);
+router.post('/', protectRoute,authorizeRole('admin','barber'), requireFields(['name','email','phone']), createBarber);
+router.put('/:id', protectRoute,authorizeRole('admin','barber'), updateBarber);
+router.delete('/:id', protectRoute,authorizeRole('admin','barber'), deleteBarber);
 
 export default router;
