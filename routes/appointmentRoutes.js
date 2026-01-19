@@ -2,6 +2,8 @@ import express from 'express';
 import { createAppointment, getAllAppointments, getAppointmentById, updateAppointment, deleteAppointment } from '../controllers/appointmentController.js';
 // import validation script
 import { requireFields } from '../middleware/validateRequest.js';
+// import authentication middleware
+import { protectRoute } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -11,10 +13,10 @@ const router = express.Router();
 // GET /api/appointments - GET all the appointments
 router.get('/:id', getAppointmentById); // order of the get requests matters
 router.get('/', getAllAppointments);
-router.put('/:id', updateAppointment);
-router.delete('/:id', deleteAppointment);
 
-// POST requireFields
-router.post('/', requireFields(['customerName', 'customerPhone','barber','appointmentDate','timeSlot']), createAppointment);
+// Protected routes - require authentication
+router.post('/', protectRoute, requireFields(['customerName', 'customerPhone','barber','appointmentDate','timeSlot']), createAppointment);
+router.put('/:id', protectRoute, updateAppointment);
+router.delete('/:id', protectRoute, deleteAppointment);
 
 export default router;

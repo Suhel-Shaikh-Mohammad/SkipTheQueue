@@ -6,6 +6,8 @@ import connectDB from './config/db.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 // import routes of the barbers
 import barberRoutes from './routes/barberRoutes.js';
+//import authentication routes
+import authRoutes from './routes/authRoutes.js';
 
 // Load Env variables
 dotenv.config();
@@ -19,6 +21,9 @@ const app = express();
 //middleware
 app.use(cors());
 app.use(express.json());
+
+//use authentication route
+app.use('/api/auth', authRoutes);
 
 //use appointment routes
 app.use('/api/appointments', appointmentRoutes);
