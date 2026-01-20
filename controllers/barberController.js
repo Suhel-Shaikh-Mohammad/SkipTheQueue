@@ -63,7 +63,7 @@ export const updateBarber = async (req,res) => {
     try{
         const barber = await Barber.findByIdAndUpdate(req.params.id, req.body, {new: true});
         if (!barber) return res.status(404).json({ message: 'Barber not found'});
-        res.status(200).json({ success: true, message: 'Barber updated successfully'});
+        res.status(200).json({ success: true, message: 'Barber updated successfully', data: barber});
     } catch (error){
         res.status(500).json({ success: false, message: error.message});
     }
@@ -74,7 +74,7 @@ export const deleteBarber = async (req,res) => {
     try{
         const barber = await Barber.findByIdAndDelete(req.params.id);
         if (!barber) return res.status(404).json({ message: 'Barber not found'});
-        res.status(200).json({ success: true, message: 'Barber Deleted'});
+        res.status(200).json({ success: true, message: 'Barber Deleted', data: barber});
     } catch (error){
         res.status(500).json({ success: false, message: error.message});
     }
