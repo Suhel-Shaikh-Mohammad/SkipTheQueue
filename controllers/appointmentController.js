@@ -27,7 +27,8 @@ export const createAppointment = async (req, res) => {
             appointmentDate,
             timeSlot,
             service,
-            notes
+            notes,
+            user: req.userId
         });
 
         res.status(201).json({
@@ -51,7 +52,11 @@ export const getAllAppointments = async (req, res) => {
       if (date) filter.appointmentDate = { $gte: new Date(date), $lt: new Date(new Date(date).getTime() + 86400000)};
       if (status) filter.status = status;
 
-      const appointments = await Appointment.find(filter).populate('barber', 'name email','User', 'username email');
+      // if user is not admin/barber, show only the appointemnts
+      if (req.userRole == 'user') filter.user = req.userId;
+
+      const appointments = await Appointment.find(filter).populate('barber', 'name email')
+  .populate('user', 'username email');
 
       res.status(200).json({
           success: true,
@@ -77,9 +82,16 @@ export const getAppointmentById = async (req, res) => {
 // Update appointment
 export const updateAppointment = async (req, res) => {
   try {
-    const appointment = await Appointment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const appointment = await Appointment.findById(req.params.id);
     if (!appointment) return res.status(404).json({ message: 'Appointment not found' });
-    res.status(200).json({ success: true, message: 'Appointment updated', data: appointment });
+    
+    // Check ownership (allow if user is owner or admin/barber)
+    if (req.userRole === 'user' && appointment.user.toString() !== req.userId) {
+      return res.status(403).json({ message: 'You can only update your own appointments' });
+    }
+    
+    const updated = await Appointment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json({ success: true, message: 'Appointment updated', data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -88,8 +100,15 @@ export const updateAppointment = async (req, res) => {
 // Delete appointment
 export const deleteAppointment = async (req, res) => {
   try {
-    const appointment = await Appointment.findByIdAndDelete(req.params.id);
+    const appointment = await Appointment.findById(req.params.id);
     if (!appointment) return res.status(404).json({ message: 'Appointment not found' });
+    
+    // Check ownership (allow if user is owner or admin/barber)
+    if (req.userRole === 'user' && appointment.user.toString() !== req.userId) {
+      return res.status(403).json({ message: 'You can only delete your own appointments' });
+    }
+    
+    await Appointment.findByIdAndDelete(req.params.id);
     res.status(200).json({ success: true, message: 'Appointment deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
