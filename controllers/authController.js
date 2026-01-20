@@ -13,7 +13,7 @@ export const registerUser = async (req, res) => {
         //Check if user already exists
         const existingUser = await User.findOne({ $or: [{email}, {username}] });
         if (existingUser){
-            return res.status(400).json({ message: 'User already exists'});
+            return res.status(400).json({ success: false,  message: 'User already exists'});
         }
 
         //Create new user
@@ -29,7 +29,7 @@ export const registerUser = async (req, res) => {
             user: user.toJSON(),
         });
     } catch (error){
-        res.status(500).json({ message: error.message});
+        res.status(500).json({ success: false,  message: error.message});
     }
 };
 
@@ -39,7 +39,7 @@ export const loginUser = async (req, res) => {
 
         // Validate inputs
         if (!email || !password){
-            return res.status(400).json({message: 'Email and password are required'});
+            return res.status(400).json({success: false, message: 'Email and password are required'});
         }
 
         // Find user and include password field
@@ -56,20 +56,23 @@ export const loginUser = async (req, res) => {
             user: user.toJSON(),
         });
     } catch (error){
-        res.status(500).json({ message: error.message });
+        res.status(500).json({success: false,  message: error.message });
     }
 };
 
 export const getCurrentUser = async (req, res) => {
     try {
         const user = await User.findById(req.userId);
-        res.json(user);
+        if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        res.json({ success: true, data: user });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({success: false, message: error.message });
     }
 };
 
 export const logoutUser = (req, res) => {
     // Since we're using JWT, logout can be handled on the client side
-    res.json({ message: 'Logout successful'});
+    res.json({ success: true,  message: 'Logout successful'});
 };

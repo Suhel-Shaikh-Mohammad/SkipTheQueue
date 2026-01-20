@@ -10,7 +10,7 @@ export const createAppointment = async (req, res) => {
         // Check if barber exists
         const barberExists = await Barber.findById(barber);
         if (!barberExists) {
-            return res.status(404).json({ message: 'Barber not found'});
+            return res.status(404).json({success:false, message: 'Barber not found'});
         }
         
         // Prevent double Booking of same barber
@@ -83,11 +83,11 @@ export const getAppointmentById = async (req, res) => {
 export const updateAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id);
-    if (!appointment) return res.status(404).json({ message: 'Appointment not found' });
+    if (!appointment) return res.status(404).json({success: false, message: 'Appointment not found' });
     
     // Check ownership (allow if user is owner or admin/barber)
     if (req.userRole === 'user' && appointment.user.toString() !== req.userId) {
-      return res.status(403).json({ message: 'You can only update your own appointments' });
+      return res.status(403).json({ success: false, message: 'You can only update your own appointments' });
     }
     
     const updated = await Appointment.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -101,11 +101,11 @@ export const updateAppointment = async (req, res) => {
 export const deleteAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id);
-    if (!appointment) return res.status(404).json({ message: 'Appointment not found' });
+    if (!appointment) return res.status(404).json({ success: false, message: 'Appointment not found' });
     
     // Check ownership (allow if user is owner or admin/barber)
     if (req.userRole === 'user' && appointment.user.toString() !== req.userId) {
-      return res.status(403).json({ message: 'You can only delete your own appointments' });
+      return res.status(403).json({ success: false,  message: 'You can only delete your own appointments' });
     }
     
     await Appointment.findByIdAndDelete(req.params.id);
