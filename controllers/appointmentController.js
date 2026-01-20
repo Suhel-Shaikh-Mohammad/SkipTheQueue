@@ -1,5 +1,6 @@
 import Appointment from '../models/appointment.js';
 import Barber from '../models/barber.js';
+import User from '../models/user.js';
 
 // Create new Appointment
 export const createAppointment = async (req, res) => {
@@ -13,7 +14,7 @@ export const createAppointment = async (req, res) => {
         }
         
         // Prevent double Booking of same barber
-        const existing = await Appointment.findOne({ barber, appointmentDate, timeSlot});
+        const existing = await Appointment.findOne({ barber, appointmentDate, timeSlot, user: req.userId});
         if (existing){
             return res.status(409).json({ success: false, message: 'This Time slot is already booked'});
         }
@@ -50,7 +51,7 @@ export const getAllAppointments = async (req, res) => {
       if (date) filter.appointmentDate = { $gte: new Date(date), $lt: new Date(new Date(date).getTime() + 86400000)};
       if (status) filter.status = status;
 
-      const appointments = await Appointment.find(filter).populate('barber', 'name email');
+      const appointments = await Appointment.find(filter).populate('barber', 'name email','User', 'username email');
 
       res.status(200).json({
           success: true,
