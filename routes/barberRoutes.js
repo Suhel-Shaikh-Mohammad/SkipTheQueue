@@ -15,8 +15,8 @@ router.get('/:id', getBarberById); //order of get requests matters
 router.get('/', getAllBarbers);
 
 // Protected routes - require authentication
-router.post('/', protectRoute,authorizeRole('admin','barber'), requireFields(['name','email','phone']), createBarber);
-router.put('/:id', protectRoute,authorizeRole('admin','barber'), updateBarber);
-router.delete('/:id', protectRoute,authorizeRole('admin','barber'), deleteBarber);
+router.post('/', protectRoute,authorizeRole('admin'), requireFields(['name','email','phone']), createBarber);
+router.put('/:id', protectRoute,authorizeRole('admin'), updateBarber);
+router.delete('/:id', protectRoute,authorizeRole('admin'), deleteBarber);
 
 export default router;

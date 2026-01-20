@@ -11,12 +11,13 @@ const router = express.Router();
 // router.post('/', createAppointment);
 
 // GET /api/appointments - GET all the appointments
-router.get('/:id', getAppointmentById); // order of the get requests matters
-router.get('/', getAllAppointments);
+// router.get('/:id', getAppointmentById); // order of the get requests matters
+
 
 // Protected routes - require authentication
 router.post('/', protectRoute, requireFields(['customerName', 'customerPhone','barber','appointmentDate','timeSlot']), createAppointment);
 router.put('/:id', protectRoute, updateAppointment);
 router.delete('/:id', protectRoute, deleteAppointment);
+router.get('/',protectRoute, getAllAppointments);
 
 export default router;
