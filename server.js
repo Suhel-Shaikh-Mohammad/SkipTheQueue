@@ -8,6 +8,8 @@ import appointmentRoutes from './routes/appointmentRoutes.js';
 import barberRoutes from './routes/barberRoutes.js';
 //import authentication routes
 import authRoutes from './routes/authRoutes.js';
+//import userRoutes 
+import userRoutes from './routes/userRoutes.js';
 
 // Load Env variables
 dotenv.config();
@@ -30,6 +32,9 @@ app.use('/api/appointments', appointmentRoutes);
 
 //use barber routes
 app.use('/api/barbers', barberRoutes);
+
+//user user routes
+app.use('/api/users', userRoutes);
 
 //test route
 app.get('/', (req, res) => {
