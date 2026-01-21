@@ -45,6 +45,10 @@ export const createAppointment = async (req, res) => {
 export const getAllAppointments = async (req, res) => {
     try{
       const {barber, date, status} = req.query;
+
+      //pagination
+      const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+      const skip = parseInt(req.query.skip, 10) || 0;
       
       //Build a filter 
       let filter = {};
@@ -55,8 +59,15 @@ export const getAllAppointments = async (req, res) => {
       // if user is not admin/barber, show only the appointemnts
       if (req.userRole == 'user') filter.user = req.userId;
 
-      const appointments = await Appointment.find(filter).populate('barber', 'name email')
-  .populate('user', 'username email');
+      const appointments = await Appointment.find(filter)
+      .populate('barber', 'name email')
+      .populate('user', 'username email')
+      .skip(skip)
+      .limit(limit);
+
+      const total = await Appointment.countDocuments(filter);
+      res.status(200).json({ success: true, count: appointments.length, total, data: appointments });
+
 
       res.status(200).json({
           success: true,
@@ -92,6 +103,46 @@ export const updateAppointment = async (req, res) => {
     
     const updated = await Appointment.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.status(200).json({ success: true, message: 'Appointment updated', data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Update appointment status
+export const updateAppointmentStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    // Validate status
+    const validStatuses = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid status. Must be: Pending, Confirmed, Completed, or Cancelled' 
+      });
+    }
+
+    const appointment = await Appointment.findById(req.params.id);
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+
+    // Validate status transition (optional but good practice)
+    if (appointment.status === 'Completed' && status !== 'Completed') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Cannot change status of completed appointment' 
+      });
+    }
+
+    appointment.status = status;
+    await appointment.save();
+
+    res.status(200).json({ 
+      success: true, 
+      message: `Appointment status updated to ${status}`, 
+      data: appointment 
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

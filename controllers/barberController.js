@@ -33,7 +33,17 @@ export const createBarber = async (req, res) => {
 // Get all barbers
 export const getAllBarbers = async (req, res) => {
     try{
-        const barbers = await Barber.find({ isActive: true});
+    
+        //pagination
+        const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+        const skip = parseInt(req.query.skip, 10) || 0;
+
+        const barbers = await Barber.find({ isActive: true})
+        .skip(skip)
+        .limit(limit);
+
+        const total = await Barber.countDocuments({ isActive: true });
+        res.status(200).json({ success: true, count: barbers.length, total, data: barbers });
 
         res.status(200).json({
             success: true,

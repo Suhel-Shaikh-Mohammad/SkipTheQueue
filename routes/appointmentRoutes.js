@@ -1,9 +1,9 @@
 import express from 'express';
-import { createAppointment, getAllAppointments, getAppointmentById, updateAppointment, deleteAppointment } from '../controllers/appointmentController.js';
+import { createAppointment, getAllAppointments, getAppointmentById, updateAppointment, deleteAppointment, updateAppointmentStatus } from '../controllers/appointmentController.js';
 // import validation script
 import { requireFields } from '../middleware/validateRequest.js';
 // import authentication middleware
-import { protectRoute } from '../middleware/authMiddleware.js';
+import { protectRoute , authorizeRole} from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -19,5 +19,6 @@ router.post('/', protectRoute, requireFields(['customerName', 'customerPhone','b
 router.put('/:id', protectRoute, updateAppointment);
 router.delete('/:id', protectRoute, deleteAppointment);
 router.get('/',protectRoute, getAllAppointments);
+router.patch('/:id/status', protectRoute, authorizeRole('admin', 'barber'), updateAppointmentStatus);
 
 export default router;
