@@ -10,6 +10,23 @@ export const registerUser = async (req, res) => {
     try{
         const {username, email, password, role} = req.body;
 
+        // Input validation
+        if (!username || username.length < 3 || username.length > 30) {
+        return res.status(400).json({ success: false, message: 'Username must be 3-30 characters' });
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return res.status(400).json({ success: false, message: 'Username can only contain letters, numbers, and underscores' });
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ success: false, message: 'Invalid email format' });
+        }
+        if (!password || password.length < 6) {
+        return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+        }
+        if (role && !['user', 'barber', 'admin'].includes(role)) {
+        return res.status(400).json({ success: false, message: 'Role must be user, barber, or admin' });
+        }
+
         //Check if user already exists
         const existingUser = await User.findOne({ $or: [{email}, {username}] });
         if (existingUser){
@@ -24,6 +41,7 @@ export const registerUser = async (req, res) => {
         const token = generateToken(user._id);
 
         res.status(201).json({
+            success: true,
             message: 'User registerd successfully',
             token,
             user: user.toJSON(),
@@ -45,12 +63,13 @@ export const loginUser = async (req, res) => {
         // Find user and include password field
         const user = await User.findOne({ email }).select('+password');
         if (!user || !(await user.comparePassword(password))){
-            return res.status(401).json({ message: 'Invalid email or password '});
+            return res.status(401).json({ success: false, message: 'Invalid email or password '});
         }
 
         // Generate token
         const token = generateToken(user._id);
         res.json({
+            success: true,
             message: 'Login Successful',
             token,
             user: user.toJSON(),

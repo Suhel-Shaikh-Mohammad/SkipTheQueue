@@ -28,6 +28,19 @@ const barberSchema = new mongoose.Schema(
         isActive: {
             type: Boolean,
             default: true
+        },
+        isOpen: {
+            type: Boolean,
+            default: false
+        },
+        bufferTime: {
+            type: Number,
+            default: 5
+        },
+        currentAppointment: {
+            appointmentId: mongoose.Schema.Types.ObjectId,
+            startedAt: Date,
+            estimatedEndTime: Date
         }
     }, { timestamps: true}
 );
