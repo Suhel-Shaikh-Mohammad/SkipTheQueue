@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBarber, getAllBarbers, getBarberById, updateBarber, deleteBarber } from '../controllers/barberController.js';
+import { createBarber, getAllBarbers, getBarberById, updateBarber, deleteBarber, startAppointment, finishAppointment, getPendingQueue, toggleShopStatus, getNextAvailable} from '../controllers/barberController.js';
 // import validation script
 import { requireFields } from '../middleware/validateRequest.js';
 // import authentication middleware
@@ -18,5 +18,13 @@ router.get('/', getAllBarbers);
 router.post('/', protectRoute,authorizeRole('admin'), requireFields(['name','email','phone']), createBarber);
 router.put('/:id', protectRoute,authorizeRole('admin'), updateBarber);
 router.delete('/:id', protectRoute,authorizeRole('admin'), deleteBarber);
+router.get('/:id/next-available', getNextAvailable); // public - customers can check
+
+//for barber and admin only
+// Queue management (barber/admin only)
+router.post('/:id/start-appointment', protectRoute, authorizeRole('admin', 'barber'), startAppointment);
+router.patch('/:id/finish-appointment', protectRoute, authorizeRole('admin', 'barber'), finishAppointment);
+router.get('/:id/pending-queue', protectRoute, authorizeRole('admin', 'barber'), getPendingQueue);
+router.patch('/:id/toggle-status', protectRoute, authorizeRole('admin', 'barber'), toggleShopStatus);
 
 export default router;
