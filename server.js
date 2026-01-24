@@ -10,6 +10,8 @@ import barberRoutes from './routes/barberRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 //import userRoutes 
 import userRoutes from './routes/userRoutes.js';
+//import review routes
+import reviewRoutes from './routes/reviewRoutes.js';
 
 // Load Env variables
 dotenv.config();
@@ -35,6 +37,9 @@ app.use('/api/barbers', barberRoutes);
 
 //user user routes
 app.use('/api/users', userRoutes);
+
+//use review routes
+app.use('/api/reviews', reviewRoutes);
 
 //test route
 app.get('/', (req, res) => {
