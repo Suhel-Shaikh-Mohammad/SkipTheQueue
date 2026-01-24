@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBarber, getAllBarbers, getBarberById, updateBarber, deleteBarber, startAppointment, finishAppointment, getPendingQueue, toggleShopStatus, getNextAvailable} from '../controllers/barberController.js';
+import { createBarber, getAllBarbers, getBarberById, updateBarber, deleteBarber, startAppointment, finishAppointment, getPendingQueue, toggleShopStatus, getNextAvailable, searchBarbers} from '../controllers/barberController.js';
 // import validation script
 import { requireFields } from '../middleware/validateRequest.js';
 // import authentication middleware
@@ -11,6 +11,7 @@ const router = express.Router();
 // router.post('/', createBarber);
 
 // GET /api/barbers - get all barbers
+router.get('/search', searchBarbers); // Search by specialization (must come BEFORE /:id)
 router.get('/:id', getBarberById); //order of get requests matters
 router.get('/', getAllBarbers);
 

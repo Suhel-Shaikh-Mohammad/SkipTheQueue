@@ -282,3 +282,34 @@ export const deleteBarber = async (req,res) => {
         res.status(500).json({ success: false, message: error.message});
     }
 };
+
+// Search barbers by specialization
+export const searchBarbers = async (req, res) => {
+    try {
+        const { specialization, isActive } = req.query;
+        const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+        const skip = parseInt(req.query.skip, 10) || 0;
+
+        let filter = { isActive: true };
+
+        if (specialization) {
+            // Case-insensitive partial match
+            filter.specialization = { $regex: specialization, $options: 'i' };
+        }
+
+        const barbers = await Barber.find(filter)
+            .skip(skip)
+            .limit(limit);
+
+        const total = await Barber.countDocuments(filter);
+
+        res.status(200).json({ 
+            success: true, 
+            count: barbers.length, 
+            total, 
+            data: barbers 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

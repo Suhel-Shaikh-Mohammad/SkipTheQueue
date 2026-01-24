@@ -166,3 +166,63 @@ export const deleteAppointment = async (req, res) => {
   }
 };
 
+// Search/Filter appointments
+export const searchAppointments = async (req, res) => {
+  try {
+    const { status, barber, startDate, endDate } = req.query;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+    const skip = parseInt(req.query.skip, 10) || 0;
+
+    let filter = {};
+
+    if (status) {
+      const validStatuses = ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
+      if (validStatuses.includes(status)) {
+        filter.status = status;
+      } else {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Invalid status. Valid options: ${validStatuses.join(', ')}` 
+        });
+      }
+    }
+
+    if (barber) {
+      filter.barber = barber;
+    }
+
+    if (startDate || endDate) {
+      filter.appointmentDate = {};
+      if (startDate) {
+        filter.appointmentDate.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        filter.appointmentDate.$lte = new Date(new Date(endDate).getTime() + 86400000);
+      }
+    }
+
+    // Regular users can only see their own appointments
+    if (req.userRole === 'user') {
+      filter.user = req.userId;
+    }
+
+    const appointments = await Appointment.find(filter)
+      .populate('barber', 'name email specialization')
+      .populate('user', 'username email')
+      .skip(skip)
+      .limit(limit)
+      .sort({ appointmentDate: 1 });
+
+    const total = await Appointment.countDocuments(filter);
+
+    res.status(200).json({ 
+      success: true, 
+      count: appointments.length, 
+      total, 
+      data: appointments 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
