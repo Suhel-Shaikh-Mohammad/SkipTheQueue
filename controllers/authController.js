@@ -1,9 +1,14 @@
 import User from '../models/user.js';
 import jwt from 'jsonwebtoken';
 
-const generateToken = (id) =>
+const generateAccessToken = (id) =>
     jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '7d',
+    });
+
+const generateRefreshToken = (id) =>
+    jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: '30d',
     });
 
 export const registerUser = async (req, res) => {
@@ -37,13 +42,19 @@ export const registerUser = async (req, res) => {
         const user = new User({ username, email, password, role});
         await user.save();
 
-        //Generate token
-        const token = generateToken(user._id);
+        //Generate tokens
+        const accessToken = generateAccessToken(user._id);
+        const refreshToken = generateRefreshToken(user._id);
+
+        // Save refresh token to database
+        user.refreshToken = refreshToken;
+        await user.save();
 
         res.status(201).json({
             success: true,
             message: 'User registerd successfully',
-            token,
+            accessToken,
+            refreshToken,
             user: user.toJSON(),
         });
     } catch (error){
@@ -66,12 +77,19 @@ export const loginUser = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid email or password '});
         }
 
-        // Generate token
-        const token = generateToken(user._id);
+        // Generate tokens
+        const accessToken = generateAccessToken(user._id);
+        const refreshToken = generateRefreshToken(user._id);
+
+        // Save refresh token to database
+        user.refreshToken = refreshToken;
+        await user.save();
+
         res.json({
             success: true,
             message: 'Login Successful',
-            token,
+            accessToken,
+            refreshToken,
             user: user.toJSON(),
         });
     } catch (error){
@@ -94,4 +112,52 @@ export const getCurrentUser = async (req, res) => {
 export const logoutUser = (req, res) => {
     // Since we're using JWT, logout can be handled on the client side
     res.json({ success: true,  message: 'Logout successful'});
+};
+
+// Refresh access token
+export const refreshAccessToken = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(400).json({
+                success: false,
+                message: 'Refresh token is required'
+            });
+        }
+
+        // Verify refresh token
+        let decoded;
+        try {
+            decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        } catch (error) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid or expired refresh token'
+            });
+        }
+
+        // Find user and verify refresh token matches
+        const user = await User.findById(decoded.id);
+        if (!user || user.refreshToken !== refreshToken) {
+            return res.status(401).json({
+                success: false,
+                message: 'Refresh token does not match or user not found'
+            });
+        }
+
+        // Generate new access token
+        const accessToken = generateAccessToken(user._id);
+
+        res.json({
+            success: true,
+            message: 'Access token refreshed successfully',
+            accessToken
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
