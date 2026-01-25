@@ -1,5 +1,5 @@
 import express from 'express';
-import { createAppointment, getAllAppointments, getAppointmentById, updateAppointment, deleteAppointment, updateAppointmentStatus, searchAppointments } from '../controllers/appointmentController.js';
+import { createAppointment, getAllAppointments, getAppointmentById, updateAppointment, deleteAppointment, updateAppointmentStatus, searchAppointments, cancelAppointment } from '../controllers/appointmentController.js';
 // import validation script
 import { requireFields } from '../middleware/validateRequest.js';
 // import authentication middleware
@@ -21,5 +21,6 @@ router.delete('/:id', protectRoute, deleteAppointment);
 router.get('/search', protectRoute, searchAppointments); // Search/filter appointments
 router.get('/',protectRoute, getAllAppointments);
 router.patch('/:id/status', protectRoute, authorizeRole('admin', 'barber'), updateAppointmentStatus);
+router.patch('/:id/cancel', protectRoute, cancelAppointment); // Cancel appointment
 
 export default router;

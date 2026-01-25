@@ -226,3 +226,56 @@ export const searchAppointments = async (req, res) => {
   }
 };
 
+// Cancel appointment
+export const cancelAppointment = async (req, res) => {
+  try {
+    const { cancellationReason } = req.body;
+    const appointmentId = req.params.id;
+
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found'
+      });
+    }
+
+    // Check if appointment can be cancelled (only Pending or Confirmed)
+    if (!['Pending', 'Confirmed'].includes(appointment.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot cancel appointment with status: ${appointment.status}. Only Pending or Confirmed appointments can be cancelled.`
+      });
+    }
+
+    // Check ownership (users can only cancel their own; admins/barbers can cancel any)
+    if (req.userRole === 'user' && appointment.user.toString() !== req.userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only cancel your own appointments'
+      });
+    }
+
+    // Update appointment with cancellation details
+    appointment.status = 'Cancelled';
+    appointment.cancelledAt = new Date();
+    appointment.cancelledBy = req.userId;
+    appointment.cancellationReason = cancellationReason || '';
+
+    await appointment.save();
+
+    const updatedAppointment = await Appointment.findById(appointmentId)
+      .populate('barber', 'name email')
+      .populate('user', 'username email')
+      .populate('cancelledBy', 'username email');
+
+    res.status(200).json({
+      success: true,
+      message: 'Appointment cancelled successfully',
+      data: updatedAppointment
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
