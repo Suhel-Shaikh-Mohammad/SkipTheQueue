@@ -114,11 +114,11 @@ export const updateAppointmentStatus = async (req, res) => {
     const { status } = req.body;
     
     // Validate status
-    const validStatuses = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+    const validStatuses = ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
     if (!status || !validStatuses.includes(status)) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Invalid status. Must be: Pending, Confirmed, Completed, or Cancelled' 
+        message: `Invalid status. Must be: ${validStatuses.join(', ')}` 
       });
     }
 
